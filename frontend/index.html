@@ -1,0 +1,1696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GreenFinance | Enterprise Energy & Carbon Observability Platform</title>
+  <meta name="description" content="Dual-Mode Real-Time Energy Observability & Carbon-per-Transaction Platform for Financial Microservices. Features Simulation Sandbox and Enterprise OpenTelemetry/Prometheus Connection." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="theme-light">
+
+  <!-- ================= TOP NAVIGATION BAR ================= -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="brand-badge">
+        <div class="brand-icon">🌱</div>
+        <div>
+          <h1 class="brand-title">GreenFinance <span class="brand-sub">OBSERVABILITY</span></h1>
+          <p class="brand-tagline">Financial Energy & Carbon Observability Platform</p>
+        </div>
+      </div>
+
+      <!-- DUAL OPERATING MODE SWITCHER -->
+      <div class="mode-switch-wrapper">
+        <div class="mode-pill-toggle">
+          <button id="btn-mode-sim" class="mode-btn active" onclick="switchOperatingMode('simulation')">
+            <span class="mode-dot"></span>
+            <span class="mode-icon">🧪</span>
+            <span class="mode-text">Simulation Mode</span>
+            <span class="mode-chip">Sandbox</span>
+          </button>
+          <button id="btn-mode-conn" class="mode-btn" onclick="switchOperatingMode('connection')">
+            <span class="mode-dot"></span>
+            <span class="mode-icon">🔗</span>
+            <span class="mode-text">Connection Mode</span>
+            <span class="mode-chip live">Enterprise</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- SYSTEM STATUS PILLS (DYNAMIC BY MODE) -->
+      <div id="sim-status-pills" class="system-status-pills">
+        <span class="status-pill online" title="Synthetic Sandbox Running">
+          <span class="status-dot"></span> Sandbox: Active
+        </span>
+        <span class="status-pill online" title="Telemetry Smoothing Filter">
+          <span class="status-dot"></span> EMA α=0.2
+        </span>
+        <span class="status-pill accent" title="Indian Grid Carbon Intensity (CEA)">
+          <span class="status-dot"></span> Grid: 700 g/kWh
+        </span>
+      </div>
+
+      <div id="conn-status-pills" class="system-status-pills hidden">
+        <span class="status-pill online" title="Prometheus Time-Series Scraper">
+          <span class="status-dot"></span> PromQL :9090
+        </span>
+        <span class="status-pill online" title="OpenTelemetry Distributed Trace Collector">
+          <span class="status-dot"></span> OTel :4318 (Live)
+        </span>
+        <span class="status-pill warning" title="Kubernetes Financial Microservices">
+          <span class="status-dot"></span> K8s Pods: 6 Active
+        </span>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <a href="http://localhost:8001" target="_blank" class="btn-enterprise-portal" title="Open User Banking Portal on Port 8001" style="text-decoration: none; padding: 7px 12px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; border-radius: 8px;">
+        🏛️ Bank Portal (:8001)
+      </a>
+
+      <div id="sim-header-actions" class="header-actions-group">
+        <button class="btn-primary-action" onclick="openWorkloadModal()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Run Workload (500 Tx)
+        </button>
+        <button class="btn-secondary-action" onclick="openScenarioModal()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          Inject Scenario
+        </button>
+      </div>
+
+      <div id="conn-header-actions" class="header-actions-group hidden">
+        <button class="btn-connect-action" onclick="switchView('connection-wizard')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          Connect Application
+        </button>
+        <button class="btn-secondary-action" onclick="refreshConnectionTelemetry()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          Poll Telemetry
+        </button>
+      </div>
+
+      <button id="theme-toggle-btn" class="btn-theme-toggle" onclick="toggleTheme()" title="Toggle Light / Dark Theme">
+        🌙 Dark
+      </button>
+
+      <div class="user-profile-pill">
+        <div class="user-avatar">SG</div>
+        <div class="user-meta">
+          <span class="user-name">Soham Gaikwad</span>
+          <span class="user-bank-id">HDFC Bank • Lead Admin</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN LAYOUT ================= -->
+  <div class="app-layout">
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="app-sidebar">
+      <div class="sidebar-mode-indicator">
+        <div class="mode-badge-label">Active Environment</div>
+        <div id="sidebar-mode-title" class="mode-badge-value">🧪 Simulation Sandbox</div>
+      </div>
+
+      <!-- ENTERPRISE SUSTAINABILITY SUITE MENU -->
+      <div class="nav-section">
+        <div class="sidebar-section-title">Sustainability Suite</div>
+        <nav class="sidebar-menu">
+          <button class="nav-link active" onclick="switchView('overview', this)">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            Executive Dashboard
+          </button>
+          <button class="nav-link" onclick="switchView('carbon-ledger', this)">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            Carbon Ledger
+            <span class="badge-mini accent">Audited</span>
+          </button>
+          <button class="nav-link" onclick="switchView('service-efficiency', this)">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Service Efficiency
+            <span class="badge-mini">Auth vs Pay</span>
+          </button>
+          <button class="nav-link" onclick="switchView('goals', this)">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+            Sustainability Goals
+            <span class="badge-mini green">SLA Pass</span>
+          </button>
+          <button class="nav-link" onclick="switchView('alerts', this)">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Basel Risk Alerts
+            <span class="badge-mini amber" id="sidebar-alert-badge">1 Active</span>
+          </button>
+          <button class="nav-link" onclick="switchView('recommendations', this)">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            Recommendations
+            <span class="badge-mini">Explainable</span>
+          </button>
+          <button class="nav-link" onclick="switchView('whatif', this)">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/></svg>
+            "What-If?" Scenario Lab
+            <span class="badge-mini purple">Projections</span>
+          </button>
+          <button class="nav-link" onclick="switchView('reports', this)">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Reporting &amp; CSV Export
+          </button>
+          <button class="nav-link" onclick="switchView('carbon-factors', this)">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            Carbon Factor Registry
+            <span class="badge-mini">CEA India</span>
+          </button>
+          <button class="nav-link" onclick="switchView('connected-users', this)">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Connected Banking Users
+            <span class="badge-mini cyan">Live Feed</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- SIMULATION NAVIGATION MENU -->
+      <div id="nav-group-simulation" class="nav-section">
+        <div class="sidebar-section-title">Telemetry &amp; Baselines</div>
+        <nav class="sidebar-menu">
+          <button class="nav-link" onclick="switchView('baseline', this)">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            0-Workload Baseline
+          </button>
+          <button class="nav-link" onclick="switchView('accuracy', this)">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Attribution Fidelity (95%)
+          </button>
+          <button class="nav-link" onclick="switchView('audit', this)">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Validation Certificate (SHA-256)
+          </button>
+        </nav>
+      </div>
+
+      <!-- CONNECTION MODE NAVIGATION MENU -->
+      <div id="nav-group-connection" class="nav-section hidden">
+        <div class="sidebar-section-title">Enterprise Infrastructure</div>
+        <nav class="sidebar-menu">
+          <button class="nav-link" onclick="switchView('connection-wizard', this)">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            Connection Wizard
+            <span class="badge-mini cyan">4 Steps</span>
+          </button>
+          <button class="nav-link" onclick="switchView('connection-traces', this)">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Distributed Trace Waterfall
+          </button>
+        </nav>
+      </div>
+
+      <!-- COMMON UTILITIES -->
+      <div class="nav-section">
+        <div class="sidebar-section-title">Developer &amp; Standards</div>
+        <nav class="sidebar-menu">
+          <button class="nav-link" onclick="switchView('promql', this)">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            PromQL Console
+          </button>
+          <button class="nav-link" onclick="switchView('grafana', this)">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 9l-5 5-4-4-3 3"/></svg>
+            Grafana Panels
+          </button>
+          <button class="nav-link" onclick="switchView('swagger', this)">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            Swagger API Spec
+          </button>
+        </nav>
+      </div>
+
+      <!-- SIDEBAR COMPLIANCE CARD -->
+      <div class="sidebar-compliance-card">
+        <div class="compliance-badge">
+          <span class="compliance-dot"></span>
+          <span>Basel III & RBI Aligned</span>
+        </div>
+        <p class="compliance-text">Multi-window persistence ($N \ge 3$) filters transient spikes into actionable enterprise risk alerts.</p>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT VIEW PANELS -->
+    <main class="app-main">
+
+      <!-- ================= ALERT NOTIFICATION BANNER ================= -->
+      <div id="high-emission-alert" class="alert-banner warning hidden">
+        <div class="alert-icon">⚠️</div>
+        <div class="alert-content">
+          <strong id="alert-banner-title">Dynamic Risk Alert Triggered</strong>
+          <span id="alert-banner-msg">Payment Service energy/tx (0.91 J) breached dynamic threshold (+30% above baseline).</span>
+        </div>
+        <div class="alert-actions">
+          <button class="btn-alert-explain" onclick="openAlertDiagnosticModal()">Explain Why</button>
+          <button class="alert-dismiss" onclick="dismissAlert()">Dismiss</button>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- MODE 1: SIMULATION MODE VIEWS                                  -->
+      <!-- ============================================================== -->
+
+      <!-- VIEW: OVERVIEW DASHBOARD -->
+      <section id="view-overview" class="view-panel active">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Simulation Overview Dashboard</h2>
+            <p class="panel-subtitle">Synthetic banking microservice cluster with real-time energy conservation and carbon derivation.</p>
+          </div>
+          <div class="panel-actions">
+            <span class="active-scenario-tag">Scenario: <strong id="lbl-active-scenario">Normal Steady State</strong></span>
+            <button class="btn-secondary-sm" onclick="triggerBatchWorkload(100)">+ Run 100 Txs</button>
+            <button class="btn-primary-sm" onclick="openScenarioModal()">Switch Scenario</button>
+          </div>
+        </div>
+
+        <!-- 4 KPI Stat Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card green-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Attribution Fidelity</span>
+              <span class="kpi-badge">Target &ge;94%</span>
+            </div>
+            <div class="kpi-body">
+              <span class="kpi-value" id="kpi-fidelity">95.0%</span>
+              <span class="kpi-unit">Energy Conserved</span>
+            </div>
+            <div class="kpi-footer">
+              <span class="kpi-trend positive">Residual Loss: 5.0% (&le;6% target)</span>
+              <span class="kpi-meta">Physical conservation pass</span>
+            </div>
+          </div>
+
+          <div class="kpi-card blue-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Energy per Transaction</span>
+              <span class="kpi-badge">Normalized</span>
+            </div>
+            <div class="kpi-body">
+              <span class="kpi-value" id="kpi-energy-tx">0.70</span>
+              <span class="kpi-unit">Joules / tx</span>
+            </div>
+            <div class="kpi-footer">
+              <span class="kpi-trend positive">Repeatability CV: 2.8% (&le;5%)</span>
+              <span class="kpi-meta">Payment + Ledger + Auth</span>
+            </div>
+          </div>
+
+          <div class="kpi-card purple-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Simulated Transactions</span>
+              <span class="kpi-badge">Throughput</span>
+            </div>
+            <div class="kpi-body">
+              <span class="kpi-value" id="kpi-tx-count">12,450</span>
+              <span class="kpi-unit">processed requests</span>
+            </div>
+            <div class="kpi-footer">
+              <span class="kpi-trend positive">100% Atomic Settlement</span>
+              <span class="kpi-meta">Double-Entry Balance</span>
+            </div>
+          </div>
+
+          <div class="kpi-card orange-card">
+            <div class="kpi-header">
+              <span class="kpi-label">Cumulative Carbon</span>
+              <span class="kpi-badge">Scope 2</span>
+            </div>
+            <div class="kpi-body">
+              <span class="kpi-value" id="kpi-carbon-kg">26.89</span>
+              <span class="kpi-unit">kg CO₂e</span>
+            </div>
+            <div class="kpi-footer">
+              <span class="kpi-trend neutral">Grid: 700 gCO₂/kWh</span>
+              <span class="kpi-meta">0.00216 g / tx</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2 Big Overview Charts -->
+        <div class="grid-2-col">
+          <div class="chart-box">
+            <div class="chart-header">
+              <div>
+                <h3 class="chart-title">Real-Time Energy Conservation Waterfall</h3>
+                <p class="chart-desc">Host Power = Container Attributed + 0-Workload Idle + Residual</p>
+              </div>
+              <span class="live-indicator">LIVE</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="simConservationChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-box">
+            <div class="chart-header">
+              <div>
+                <h3 class="chart-title">Microservice Energy Footprint Attribution</h3>
+                <p class="chart-desc">Joules consumed across financial services per transaction</p>
+              </div>
+              <span class="live-indicator">LIVE</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="simServiceEnergyChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scenario Quick Bar -->
+        <div class="scenario-ribbon mt-4">
+          <div class="scenario-ribbon-title">
+            <span class="icon-chip">🎲</span>
+            <strong>Quick Scenario Stress Tests:</strong>
+          </div>
+          <div class="scenario-buttons">
+            <button class="btn-scenario active" onclick="applyScenario('NORMAL')">Normal State</button>
+            <button class="btn-scenario" onclick="applyScenario('TRAFFIC_SPIKE')">Traffic Spike (+300%)</button>
+            <button class="btn-scenario" onclick="applyScenario('PAYMENT_SPIKE')">Payment Inefficiency (+30%)</button>
+            <button class="btn-scenario" onclick="applyScenario('LEDGER_BOTTLENECK')">Ledger Lock Bottleneck</button>
+            <button class="btn-scenario" onclick="applyScenario('TELEMETRY_DRIFT')">Residual Drift (&gt;6%)</button>
+            <button class="btn-scenario" onclick="applyScenario('HIGH_CARBON_GRID')">Coal Grid Shift (820g)</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: IDLE BASELINE STUDIO -->
+      <section id="view-baseline" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Idle Baseline Calibration Studio</h2>
+            <p class="panel-subtitle">Empirical measurement of system idle power consumption under 0-workload conditions.</p>
+          </div>
+          <div class="panel-actions">
+            <button id="btn-start-calibration" class="btn-primary-action" onclick="startCalibration()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Start Calibration Cycle
+            </button>
+            <button id="btn-lock-baseline" class="btn-accent-action" onclick="lockBaseline()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              Lock Baseline
+            </button>
+          </div>
+        </div>
+
+        <div class="grid-2-col">
+          <div class="chart-box">
+            <div class="chart-header">
+              <div>
+                <h3 class="chart-title">Real-Time Idle Power Sampling (Watts)</h3>
+                <p class="chart-desc">15-second sampling window under 0 transaction load</p>
+              </div>
+              <span id="calibration-badge" class="badge-mini green">READY</span>
+            </div>
+            <div class="chart-container">
+              <canvas id="baselineChart"></canvas>
+            </div>
+          </div>
+
+          <div class="stats-card">
+            <h3 class="card-heading">Calibration Statistical Summary</h3>
+            <div class="stat-rows">
+              <div class="stat-row">
+                <span class="stat-label">Mean Idle Power ($\mu_{idle}$):</span>
+                <span class="stat-value" id="base-mean">18.70 W</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Standard Deviation ($\sigma_{idle}$):</span>
+                <span class="stat-value" id="base-std">0.80 W</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Coefficient of Variation ($CV$):</span>
+                <span class="stat-value text-green" id="base-cv">4.28% (Target &le; 5.0%)</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Samples Recorded:</span>
+                <span class="stat-value" id="base-samples">60 / 60</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Locked Profile ID:</span>
+                <span class="stat-value font-mono" id="base-profile-id">prof-base-8812-lock</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Baseline Status:</span>
+                <span class="badge-chip valid" id="base-status">VALID &amp; LOCKED</span>
+              </div>
+            </div>
+            <div class="card-footer-box">
+              <small>Mathematical Reference: Basel operational risk models require empirical baselines before establishing tolerance bands.</small>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: TRANSACTIONS & BENCHMARK -->
+      <section id="view-transactions" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Transactions &amp; Repeatability Benchmark</h2>
+            <p class="panel-subtitle">Batch workload generator testing transaction energy consistency (target CV &le; 5.0%).</p>
+          </div>
+          <div class="panel-actions">
+            <button class="btn-primary-action" onclick="runBenchmarkBatch(500)">Run 500 Tx Benchmark</button>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card green-card">
+            <div class="kpi-header"><span class="kpi-label">Mean Energy / Tx</span></div>
+            <div class="kpi-body"><span class="kpi-value" id="tx-mean-energy">0.7012</span><span class="kpi-unit">Joules</span></div>
+            <div class="kpi-footer"><span class="kpi-trend positive">&plusmn; 0.021 J Std Dev</span></div>
+          </div>
+          <div class="kpi-card blue-card">
+            <div class="kpi-header"><span class="kpi-label">Repeatability CV</span></div>
+            <div class="kpi-body"><span class="kpi-value" id="tx-cv-pct">2.99%</span><span class="kpi-unit">Target &le; 5%</span></div>
+            <div class="kpi-footer"><span class="kpi-trend positive">Status: PASS (STABLE)</span></div>
+          </div>
+          <div class="kpi-card purple-card">
+            <div class="kpi-header"><span class="kpi-label">Batch Joules</span></div>
+            <div class="kpi-body"><span class="kpi-value" id="tx-batch-joules">350.6</span><span class="kpi-unit">Joules</span></div>
+            <div class="kpi-footer"><span class="kpi-trend neutral">0.000097 kWh</span></div>
+          </div>
+          <div class="kpi-card orange-card">
+            <div class="kpi-header"><span class="kpi-label">Batch Carbon</span></div>
+            <div class="kpi-body"><span class="kpi-value" id="tx-batch-carbon">0.068</span><span class="kpi-unit">g CO₂e</span></div>
+            <div class="kpi-footer"><span class="kpi-trend neutral">0.136 mg / tx</span></div>
+          </div>
+        </div>
+
+        <div class="table-container mt-4">
+          <div class="table-header-bar">
+            <h3>Recent Standardized Transactions</h3>
+            <span class="badge-mini">Double-Entry Audited</span>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Tx ID</th>
+                <th>Timestamp</th>
+                <th>Type</th>
+                <th>Route Path</th>
+                <th>Duration</th>
+                <th>Energy (J)</th>
+                <th>Carbon (mg)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="sim-tx-tbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- VIEW: ATTRIBUTION FIDELITY -->
+      <section id="view-accuracy" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Attribution Fidelity &amp; Validation Center</h2>
+            <p class="panel-subtitle">Verifies physical energy conservation between host node and attributed microservice containers.</p>
+          </div>
+          <div class="panel-actions">
+            <button class="btn-primary-action" onclick="runValidationExperiment()">Execute Full Validation Run</button>
+          </div>
+        </div>
+
+        <div class="fidelity-hero-card">
+          <div class="fidelity-score-box">
+            <div class="fidelity-number" id="fidelity-hero-pct">95.0%</div>
+            <div class="fidelity-label">Attribution Fidelity</div>
+            <div class="fidelity-badge pass" id="fidelity-hero-status">PASS (Residual &le; 6.0%)</div>
+          </div>
+          <div class="fidelity-breakdown-box">
+            <div class="breakdown-item">
+              <span class="item-label">Host Energy ($E_{host}$):</span>
+              <span class="item-val" id="fid-host">1000.0 J</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="item-label">Container Energy ($\sum E_{cont}$):</span>
+              <span class="item-val" id="fid-cont">800.0 J</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="item-label">Idle Baseline Energy ($E_{idle}$):</span>
+              <span class="item-val" id="fid-idle">150.0 J</span>
+            </div>
+            <div class="breakdown-item highlight">
+              <span class="item-label">Total Accounted Energy:</span>
+              <span class="item-val" id="fid-accounted">950.0 J</span>
+            </div>
+            <div class="breakdown-item residual">
+              <span class="item-label">Residual Unaccounted Loss ($\Delta E$):</span>
+              <span class="item-val text-amber" id="fid-residual">50.0 J (5.0%)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-box mt-4">
+          <div class="chart-header">
+            <div>
+              <h3 class="chart-title">Energy Attribution Waterfall ($\Delta E = |E_{host} - (\sum E_{cont} + E_{idle})|$)</h3>
+              <p class="chart-desc">Demonstrates zero-leakage attribution fidelity against the SRS target limit of 6%.</p>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="fidelityWaterfallChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: WHAT-IF SCENARIO LAB -->
+      <section id="view-whatif" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">"What-If?" Scenario &amp; Carbon Lab</h2>
+            <p class="panel-subtitle">Simulate architectural optimizations, workload growth, and grid transitions to project carbon reductions.</p>
+          </div>
+          <div class="panel-actions">
+            <button class="btn-primary-action" onclick="runWhatIfCalculation()">Compute Projections</button>
+          </div>
+        </div>
+
+        <div class="grid-2-col">
+          <div class="controls-card">
+            <h3 class="card-heading">Scenario Parameters</h3>
+            <div class="control-group">
+              <label>Workload Scale Multiplier: <strong id="val-tx-mult">1.5x</strong></label>
+              <input type="range" id="slider-tx-mult" min="0.5" max="5.0" step="0.1" value="1.5" oninput="updateWhatIfLabels()" />
+            </div>
+            <div class="control-group">
+              <label>Service Efficiency Optimization: <strong id="val-eff-opt">-15%</strong></label>
+              <input type="range" id="slider-eff-opt" min="-40" max="20" step="5" value="-15" oninput="updateWhatIfLabels()" />
+              <small>Simulates DB indexing, container right-sizing, or JIT compilation gains</small>
+            </div>
+            <div class="control-group">
+              <label>Target Grid Carbon Intensity: <strong id="val-grid-target">25 g/kWh (Clean PPA)</strong></label>
+              <select id="select-grid-factor" class="form-select" onchange="updateWhatIfLabels()">
+                <option value="25">Corporate Clean Energy PPA (25 g/kWh)</option>
+                <option value="230">European Union Average (230 g/kWh)</option>
+                <option value="380">US eGRID National Average (380 g/kWh)</option>
+                <option value="700" selected>India CEA National Grid (700 g/kWh)</option>
+                <option value="820">Coal-Dominated Grid Region (820 g/kWh)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="projections-card">
+            <h3 class="card-heading">Projected Environmental Impact</h3>
+            <div class="delta-box">
+              <div class="delta-metric">
+                <span class="delta-label">Carbon Reduction:</span>
+                <span class="delta-val text-green" id="whatif-carbon-reduced">18.42 kg CO₂e</span>
+                <span class="delta-sub" id="whatif-pct-saved">(-68.5% emissions)</span>
+              </div>
+              <div class="delta-metric">
+                <span class="delta-label">Equivalent Offset:</span>
+                <span class="delta-val text-cyan" id="whatif-trees">~0.9 Mature Trees</span>
+                <span class="delta-sub">Annualized absorption equivalent</span>
+              </div>
+            </div>
+            <div class="chart-container-sm">
+              <canvas id="whatifComparisonChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: DYNAMIC THRESHOLDS & BASEL GOVERNANCE -->
+      <section id="view-dynamic-thresholds" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Basel-Aligned Dynamic Threshold Engine</h2>
+            <p class="panel-subtitle">Risk appetite, service criticality, and persistence windows replacing naive static thresholds.</p>
+          </div>
+          <div class="panel-actions">
+            <button class="btn-primary-action" onclick="saveThresholdConfigs()">Save Risk Parameters</button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <div class="table-header-bar">
+            <h3>Service-Specific Dynamic Risk Matrix</h3>
+            <span class="badge-mini amber">Basel III / RBI Climate Risk</span>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Microservice</th>
+                <th>Criticality</th>
+                <th>Risk Appetite</th>
+                <th>Baseline ($\mu \pm \sigma$)</th>
+                <th>Warning ($2\sigma$)</th>
+                <th>Critical ($3\sigma$)</th>
+                <th>Persistence</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="threshold-config-tbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="explanation-demo-card mt-4">
+          <div class="explanation-card-header">
+            <h4>💡 Explainable Alert Diagnostic Rationale (Simulated Sample)</h4>
+            <span class="badge-chip critical">CRITICAL PERSISTENT BREACH</span>
+          </div>
+          <div class="explanation-body">
+            <p><strong>Trigger Condition:</strong> Payment Service energy/tx reached <strong>0.910 J</strong> (+30.0% above baseline mean of 0.700 J). Critical threshold is <strong>0.760 J</strong>.</p>
+            <p><strong>Persistence Counter:</strong> Persisted across <strong>4 consecutive 15-second windows</strong> (configured threshold: 3 windows). Transient spike filter satisfied.</p>
+            <p><strong>Root Cause Indicators:</strong> High container CPU saturation (82%) + Latency surge (145ms) detected in container cgroup.</p>
+            <p><strong>Remediation:</strong> Check microservice trace spans in OpenTelemetry / Jaeger for un-indexed query locks.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: VALIDATION CERTIFICATE -->
+      <section id="view-audit" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Energy Validation Certificate (EVR)</h2>
+            <p class="panel-subtitle">Auditable, cryptographically signed certificate of telemetry attribution fidelity and repeatability.</p>
+          </div>
+          <div class="panel-actions">
+            <button class="btn-primary-action" onclick="printCertificate()">Download Certificate PDF</button>
+          </div>
+        </div>
+
+        <div class="certificate-paper">
+          <div class="cert-header">
+            <div class="cert-logo">🌱 GreenFinance Systems</div>
+            <div class="cert-id" id="cert-id">EVR-CERT-8842-A1</div>
+          </div>
+          <h2 class="cert-title">ENERGY ATTRIBUTION &amp; ACCURACY VALIDATION CERTIFICATE</h2>
+          <p class="cert-subtitle">Compliant with IEEE 830 SRS Specifications, ISO 14064-3 GHG Standards &amp; Basel Operational Risk Guidance</p>
+
+          <div class="cert-grid">
+            <div class="cert-col">
+              <h4>Telemetry Attribution Metrics</h4>
+              <p>Host Energy Measured: <strong id="cert-host">1000.0 J</strong></p>
+              <p>Accounted (Containers + Idle): <strong id="cert-acc">950.0 J</strong></p>
+              <p>Attribution Residual Loss: <strong class="text-green" id="cert-residual">5.0% (&le; 6.0%)</strong></p>
+              <p>Attribution Fidelity Score: <strong class="text-green" id="cert-fidelity">95.0%</strong></p>
+            </div>
+            <div class="cert-col">
+              <h4>Statistical Consistency</h4>
+              <p>0-Workload Idle Baseline: <strong id="cert-base">18.70 W</strong></p>
+              <p>Workload Repeatability CV: <strong class="text-green" id="cert-cv">2.99% (&le; 5.0%)</strong></p>
+              <p>Smoothing Filter: <strong>EMA (&alpha; = 0.2)</strong></p>
+              <p>Certification Status: <strong class="badge-chip valid" id="cert-status">OFFICIALLY VERIFIED</strong></p>
+            </div>
+          </div>
+
+          <div class="cert-signature-box">
+            <div class="cert-hash-label">Cryptographic Audit Digest (SHA-256):</div>
+            <div class="cert-hash-val font-mono" id="cert-sha256">e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: DOUBLE-ENTRY LEDGER -->
+      <section id="view-ledger" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Double-Entry Financial &amp; Carbon Ledger</h2>
+            <p class="panel-subtitle">Audited double-entry bookkeeping pairing monetary settlement with carbon liability adjustments.</p>
+          </div>
+        </div>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Journal ID</th>
+                <th>Timestamp</th>
+                <th>Debit Account (DR)</th>
+                <th>Credit Account (CR)</th>
+                <th>Amount (INR)</th>
+                <th>Carbon Liability</th>
+                <th>SHA-256 Audit Hash</th>
+              </tr>
+            </thead>
+            <tbody id="sim-ledger-tbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- MODE 2: ENTERPRISE CONNECTION MODE VIEWS                       -->
+      <!-- ============================================================== -->
+
+      <!-- VIEW: 4-STEP CONNECTION WIZARD -->
+      <section id="view-connection-wizard" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Enterprise Application Connection Wizard</h2>
+            <p class="panel-subtitle">Attach GreenFinance to external banking clusters via OpenTelemetry, Prometheus &amp; Kubernetes.</p>
+          </div>
+          <div class="panel-actions">
+            <span class="badge-chip live" id="wizard-status-pill">Step 1: Connect Endpoints</span>
+          </div>
+        </div>
+
+        <!-- 4-Step Stepper Bar -->
+        <div class="stepper-bar">
+          <div class="step-item active" id="step-nav-1" onclick="goToStep(1)">
+            <div class="step-number">1</div>
+            <div class="step-label">Connect Endpoints</div>
+          </div>
+          <div class="step-line"></div>
+          <div class="step-item" id="step-nav-2" onclick="goToStep(2)">
+            <div class="step-number">2</div>
+            <div class="step-label">Auto-Discovery</div>
+          </div>
+          <div class="step-line"></div>
+          <div class="step-item" id="step-nav-3" onclick="goToStep(3)">
+            <div class="step-number">3</div>
+            <div class="step-label">Trace Mapping</div>
+          </div>
+          <div class="step-line"></div>
+          <div class="step-item" id="step-nav-4" onclick="goToStep(4)">
+            <div class="step-number">4</div>
+            <div class="step-label">Off-Peak Baseline</div>
+          </div>
+        </div>
+
+        <!-- Step 1 Content: Connect -->
+        <div id="wizard-step-1" class="wizard-step-panel active">
+          <div class="form-card">
+            <h3>Step 1 — Connect Telemetry Sources</h3>
+            <p>Enter the telemetry collector endpoints of the target financial banking cluster.</p>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Application Name</label>
+                <input type="text" id="conn-app-name" value="CoreBanking-Cluster" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label>Environment</label>
+                <select id="conn-env" class="form-select">
+                  <option value="Production" selected>Production (PCI-DSS Scoped)</option>
+                  <option value="Staging">Staging / Pre-Prod</option>
+                  <option value="UAT">UAT Sandbox</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row-2 mt-2">
+              <div class="form-group">
+                <label>Prometheus PromQL HTTP Endpoint</label>
+                <input type="text" id="conn-prom-url" value="http://localhost:9090" class="form-input" />
+              </div>
+              <div class="form-group">
+                <label>OpenTelemetry Collector Endpoint (gRPC / HTTP)</label>
+                <input type="text" id="conn-otel-url" value="http://localhost:4318" class="form-input" />
+              </div>
+            </div>
+
+            <div class="wizard-actions mt-4">
+              <button class="btn-primary-action" onclick="runTestConnection()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                Test Connection &amp; Continue
+              </button>
+            </div>
+            <div id="test-conn-result" class="test-result-box hidden"></div>
+          </div>
+        </div>
+
+        <!-- Step 2 Content: Auto-Discovery -->
+        <div id="wizard-step-2" class="wizard-step-panel hidden">
+          <div class="table-container">
+            <div class="table-header-bar">
+              <h3>Step 2 — Discovered Financial Microservices &amp; Pods</h3>
+              <span class="badge-mini green" id="discovered-count-badge">6 Services Online</span>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Service ID</th>
+                  <th>Service Name</th>
+                  <th>Namespace</th>
+                  <th>Pods</th>
+                  <th>CPU Allocation</th>
+                  <th>Memory</th>
+                  <th>Criticality</th>
+                  <th>Telemetry Driver</th>
+                </tr>
+              </thead>
+              <tbody id="discovered-services-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+            <div class="wizard-actions mt-4">
+              <button class="btn-secondary-action" onclick="goToStep(1)">Back</button>
+              <button class="btn-primary-action" onclick="goToStep(3)">Confirm Services &amp; Discover Traces</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 Content: Trace Mapping -->
+        <div id="wizard-step-3" class="wizard-step-panel hidden">
+          <div class="table-container">
+            <div class="table-header-bar">
+              <div>
+                <h3>Step 3 — OpenTelemetry Distributed Traces Stream</h3>
+                <p class="subtext">Observing request paths across microservices. <strong class="text-green">🔒 Zero Financial PII Collected.</strong></p>
+              </div>
+              <span class="live-indicator">STREAMING</span>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Trace ID</th>
+                  <th>Tx Identifier</th>
+                  <th>Transaction Type</th>
+                  <th>Microservice Call Path</th>
+                  <th>Latency</th>
+                  <th>Energy (J)</th>
+                  <th>Carbon (mg)</th>
+                  <th>Fidelity</th>
+                </tr>
+              </thead>
+              <tbody id="conn-traces-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+            <div class="wizard-actions mt-4">
+              <button class="btn-secondary-action" onclick="goToStep(2)">Back</button>
+              <button class="btn-primary-action" onclick="goToStep(4)">Proceed to Off-Peak Baseline</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4 Content: Off-Peak Baseline -->
+        <div id="wizard-step-4" class="wizard-step-panel hidden">
+          <div class="form-card">
+            <h3>Step 4 — Production Environment Baseline Calibration</h3>
+            <p>Calibrate idle power during an off-peak maintenance window to establish $\mu_{idle}$ and $\sigma_{idle}$.</p>
+            <div class="stat-rows mt-3">
+              <div class="stat-row">
+                <span class="stat-label">Production Host Idle Power:</span>
+                <span class="stat-value text-green">18.70 W</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Baseline Stability CV:</span>
+                <span class="stat-value text-green">3.12% (&le; 5.0% Pass)</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Calibration Window:</span>
+                <span class="stat-value">60 telemetry samples (15s interval)</span>
+              </div>
+            </div>
+            <div class="wizard-actions mt-4">
+              <button class="btn-secondary-action" onclick="goToStep(3)">Back</button>
+              <button class="btn-accent-action" onclick="finishConnectionWizard()">
+                Lock Production Baseline &amp; Start Live Monitoring
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: REAL FLEET & HOST ENERGY MONITOR -->
+      <section id="view-connection-energy" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Real-Time Fleet &amp; Host Energy Telemetry</h2>
+            <p class="panel-subtitle">Kepler RAPL eBPF kernel counters mapped to Kubernetes cgroup container slices.</p>
+          </div>
+          <div class="panel-actions">
+            <span class="status-pill online"><span class="status-dot"></span> Node: cluster-worker-node-01</span>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card blue-card">
+            <div class="kpi-header"><span class="kpi-label">Host Node Power</span></div>
+            <div class="kpi-body"><span class="kpi-value" id="conn-host-watts">92.40</span><span class="kpi-unit">Watts</span></div>
+            <div class="kpi-footer"><span class="kpi-trend neutral">RAPL Package + DRAM</span></div>
+          </div>
+          <div class="kpi-card green-card">
+            <div class="kpi-header"><span class="kpi-label">Container Allocation</span></div>
+            <div class="kpi-body"><span class="kpi-value" id="conn-cont-watts">70.15</span><span class="kpi-unit">Watts</span></div>
+            <div class="kpi-footer"><span class="kpi-trend positive">6 Financial Pods Attributed</span></div>
+          </div>
+          <div class="kpi-card purple-card">
+            <div class="kpi-header"><span class="kpi-label">Idle Base Power</span></div>
+            <div class="kpi-body"><span class="kpi-value" id="conn-idle-watts">18.70</span><span class="kpi-unit">Watts</span></div>
+            <div class="kpi-footer"><span class="kpi-trend neutral">Locked Profile Calibration</span></div>
+          </div>
+          <div class="kpi-card orange-card">
+            <div class="kpi-header"><span class="kpi-label">Attribution Fidelity</span></div>
+            <div class="kpi-body"><span class="kpi-value" id="conn-fidelity-val">96.16%</span><span class="kpi-unit">Pass (&le; 6%)</span></div>
+            <div class="kpi-footer"><span class="kpi-trend positive">Residual Loss: 3.55 W</span></div>
+          </div>
+        </div>
+
+        <div class="grid-2-col mt-4">
+          <div class="chart-box">
+            <div class="chart-header">
+              <div>
+                <h3 class="chart-title">Real-Time Power Allocation (Watts)</h3>
+                <p class="chart-desc">Continuous telemetry stream from connected banking infrastructure</p>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="connLivePowerChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-box">
+            <div class="chart-header">
+              <div>
+                <h3 class="chart-title">Container Energy Attribution Share</h3>
+                <p class="chart-desc">Fraction of compute energy drawn by each microservice</p>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="connServiceShareChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: ENTERPRISE CARBON (SCOPE 2) -->
+      <section id="view-connection-carbon" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Enterprise Real-Time Carbon Monitor</h2>
+            <p class="panel-subtitle">Scope 2 emissions tracking driven by real telemetry and dynamic regional grid factors.</p>
+          </div>
+          <div class="panel-actions">
+            <span class="active-scenario-tag">Grid Factor: <strong>700 gCO₂e / kWh</strong></span>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card green-card">
+            <div class="kpi-header"><span class="kpi-label">Today's Footprint</span></div>
+            <div class="kpi-body"><span class="kpi-value">129.0</span><span class="kpi-unit">kg CO₂e</span></div>
+            <div class="kpi-footer"><span class="kpi-trend positive">184.2 kWh Total Consumed</span></div>
+          </div>
+          <div class="kpi-card blue-card">
+            <div class="kpi-header"><span class="kpi-label">Carbon / Transaction</span></div>
+            <div class="kpi-body"><span class="kpi-value">0.052</span><span class="kpi-unit">mg CO₂e / tx</span></div>
+            <div class="kpi-footer"><span class="kpi-trend positive">2,483,921 transactions</span></div>
+          </div>
+          <div class="kpi-card purple-card">
+            <div class="kpi-header"><span class="kpi-label">Projected Daily Total</span></div>
+            <div class="kpi-body"><span class="kpi-value">221.0</span><span class="kpi-unit">kg CO₂e</span></div>
+            <div class="kpi-footer"><span class="kpi-trend neutral">Based on diurnal run-rate</span></div>
+          </div>
+          <div class="kpi-card orange-card">
+            <div class="kpi-header"><span class="kpi-label">Monthly Projection</span></div>
+            <div class="kpi-body"><span class="kpi-value">6.40</span><span class="kpi-unit">metric tonnes</span></div>
+            <div class="kpi-footer"><span class="kpi-trend neutral">Scope 2 GHG Category</span></div>
+          </div>
+        </div>
+
+        <div class="chart-box mt-4">
+          <div class="chart-header">
+            <div>
+              <h3 class="chart-title">Diurnal Carbon Footprint vs Clean PPA Baseline</h3>
+              <p class="chart-desc">Comparison between standard grid mix vs clean energy scenario</p>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="connCarbonTimelineChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: SERVICE EFFICIENCY & ANOMALY DETECTION -->
+      <section id="view-connection-efficiency" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Financial Service Efficiency &amp; Anomaly Detection</h2>
+            <p class="panel-subtitle">Tracks normalized Energy/tx deviations against historical baselines to pinpoint code regressions.</p>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <div class="table-header-bar">
+            <h3>Live Service Efficiency Benchmark Matrix</h3>
+            <span class="badge-mini amber">Auto-Diagnostics</span>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Service Name</th>
+                <th>Criticality</th>
+                <th>Current Energy/Tx</th>
+                <th>Baseline ($\mu$)</th>
+                <th>Efficiency Drift</th>
+                <th>Alert Level</th>
+                <th>Diagnostic Explanation</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="conn-efficiency-tbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- VIEW: BASEL RISK THRESHOLDS (CONNECTION MODE) -->
+      <section id="view-connection-thresholds" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Enterprise Risk &amp; Alert Center</h2>
+            <p class="panel-subtitle">Live alert management aligned with Basel III operational risk and RBI climate stress-testing rules.</p>
+          </div>
+        </div>
+
+        <div class="alert-cards-grid" id="conn-alerts-container">
+          <!-- Dynamically populated with explainable alert cards -->
+        </div>
+      </section>
+
+      <!-- VIEW: DISTRIBUTED TRACE WATERFALL -->
+      <section id="view-connection-traces" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Distributed Trace Waterfall Explorer</h2>
+            <p class="panel-subtitle">Visual journey of a financial transaction across microservices with per-hop energy attribution.</p>
+          </div>
+        </div>
+
+        <div class="trace-explorer-card">
+          <div class="trace-meta-header">
+            <div>
+              <span class="font-mono text-cyan">Trace ID: <strong>trace-4b93e1</strong></span>
+              <span class="badge-mini ml-2">TXN-8F9201 • UPI Inter-Bank Transfer</span>
+            </div>
+            <div>
+              <span>Total Latency: <strong>168 ms</strong></span>
+              <span class="ml-3">Total Energy: <strong class="text-green">0.684 J</strong></span>
+              <span class="ml-3">Total Carbon: <strong class="text-purple">0.133 mg</strong></span>
+            </div>
+          </div>
+
+          <div class="waterfall-container mt-3">
+            <div class="waterfall-row">
+              <div class="wf-svc">api-gateway</div>
+              <div class="wf-bar-wrapper"><div class="wf-bar" style="left: 0%; width: 12%;">18ms (0.04 J)</div></div>
+            </div>
+            <div class="waterfall-row">
+              <div class="wf-svc">auth-service</div>
+              <div class="wf-bar-wrapper"><div class="wf-bar purple" style="left: 10%; width: 16%;">24ms (0.11 J)</div></div>
+            </div>
+            <div class="waterfall-row">
+              <div class="wf-svc">fraud-service</div>
+              <div class="wf-bar-wrapper"><div class="wf-bar orange" style="left: 24%; width: 28%;">48ms (0.52 J)</div></div>
+            </div>
+            <div class="waterfall-row">
+              <div class="wf-svc">payment-service</div>
+              <div class="wf-bar-wrapper"><div class="wf-bar green" style="left: 48%; width: 36%;">62ms (0.70 J)</div></div>
+            </div>
+            <div class="waterfall-row">
+              <div class="wf-svc">ledger-service</div>
+              <div class="wf-bar-wrapper"><div class="wf-bar blue" style="left: 80%; width: 20%;">32ms (0.40 J)</div></div>
+            </div>
+          </div>
+          <div class="trace-privacy-note mt-3">
+            🔒 <strong>Privacy Assurance:</strong> Zero customer financial data (account balances, account numbers, amounts, cards) is inspected or logged. Only span durations and cgroup CPU/energy metrics are correlated.
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: REGULATORY COMPLIANCE AUDIT -->
+      <section id="view-connection-audit" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Tamper-Evident Regulatory Compliance Audit</h2>
+            <p class="panel-subtitle">Cryptographically verified audit trail adhering to ISO 14064-3 and GHG Protocol Scope 2 guidance.</p>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Audit ID</th>
+                <th>Timestamp</th>
+                <th>Application / Service</th>
+                <th>Observed Energy</th>
+                <th>Derived Carbon</th>
+                <th>Fidelity (%)</th>
+                <th>Cryptographic SHA-256 Digest</th>
+                <th>Verification</th>
+              </tr>
+            </thead>
+            <tbody id="conn-audit-tbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- COMMON VIEW: PROMQL CONSOLE -->
+      <section id="view-promql" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">PromQL Telemetry Console</h2>
+            <p class="panel-subtitle">Inspect raw Kepler energy telemetry and query Prometheus time-series metrics.</p>
+          </div>
+        </div>
+        <div class="console-box">
+          <div class="console-input-row">
+            <span class="font-mono text-cyan">promql&gt;</span>
+            <input type="text" id="promql-input" class="console-input" value="sum(rate(kepler_container_joules_total[1m]))" />
+            <button class="btn-primary-sm" onclick="runPromqlQuery()">Execute Query</button>
+          </div>
+          <pre id="promql-output" class="console-output">
+{
+  "status": "success",
+  "data": {
+    "resultType": "vector",
+    "result": [
+      {
+        "metric": {},
+        "value": [1727010892.421, "70.15"]
+      }
+    ]
+  }
+}
+          </pre>
+        </div>
+      </section>
+
+      <!-- COMMON VIEW: GRAFANA PANELS -->
+      <section id="view-grafana" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Grafana Observability Panels</h2>
+            <p class="panel-subtitle">4 core production panels mirroring enterprise monitoring dashboards.</p>
+          </div>
+        </div>
+        <div class="grid-2-col">
+          <div class="chart-box">
+            <h3 class="chart-title">Panel 1: Rate of Container Joules</h3>
+            <div class="chart-container"><canvas id="grafanaPanel1"></canvas></div>
+          </div>
+          <div class="chart-box">
+            <h3 class="chart-title">Panel 2: Carbon-per-Transaction</h3>
+            <div class="chart-container"><canvas id="grafanaPanel2"></canvas></div>
+          </div>
+          <div class="chart-box">
+            <h3 class="chart-title">Panel 3: Repeatability CV %</h3>
+            <div class="chart-container"><canvas id="grafanaPanel3"></canvas></div>
+          </div>
+          <div class="chart-box">
+            <h3 class="chart-title">Panel 4: Attribution Residual Loss %</h3>
+            <div class="chart-container"><canvas id="grafanaPanel4"></canvas></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- COMMON VIEW: SWAGGER CONTROL PLANE -->
+      <section id="view-swagger" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">API Control Plane &amp; Swagger Spec</h2>
+            <p class="panel-subtitle">OpenAPI documentation for both Simulation Sandbox and Enterprise Connection endpoints.</p>
+          </div>
+        </div>
+        <div class="api-doc-card">
+          <h3>Interactive Documentation</h3>
+          <p>Access the interactive Swagger UI and complete OpenAPI specification hosted locally on FastAPI:</p>
+          <div class="mt-3">
+            <a href="http://127.0.0.1:8000/docs" target="_blank" class="btn-primary-action">Open Swagger UI (:8000/docs) &rarr;</a>
+            <a href="http://127.0.0.1:8000/redoc" target="_blank" class="btn-secondary-action ml-2">Open ReDoc (:8000/redoc) &rarr;</a>
+          </div>
+      <!-- ============================================================== -->
+      <!-- ENTERPRISE SUSTAINABILITY SUITE PANELS                         -->
+      <!-- ============================================================== -->
+
+      <!-- VIEW: AUDITED CARBON LEDGER -->
+      <section id="view-carbon-ledger" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Audited Carbon Ledger</h2>
+            <p class="panel-subtitle">Transaction carbon footprints derived from physical workload energy during 5-minute sampling windows.</p>
+          </div>
+          <div class="panel-actions">
+            <button class="btn-secondary-sm" onclick="fetchSustainabilityLedger()">↻ Refresh Ledger</button>
+            <a href="/sustainability/report/csv" class="btn-primary-sm" download>⬇ Export CSV</a>
+          </div>
+        </div>
+
+        <div class="disclaimer-alert-box mb-3">
+          <span class="info-icon">ℹ️</span>
+          <span><strong>Technical Methodology Notice:</strong> Energy is measured at the container/pod workload level via Kepler eBPF over a defined measurement window and attributed proportionally across processed transactions using the active Indian CEA grid carbon factor (713 gCO₂/kWh).</span>
+        </div>
+
+        <div class="filters-bar">
+          <input type="text" id="ledger-search-input" class="search-input" placeholder="Search by Txn ID, bank, or trace..." oninput="handleLedgerSearch(this.value)" />
+          <select id="ledger-filter-service" class="filter-select" onchange="handleLedgerFilterService(this.value)">
+            <option value="ALL">All Services</option>
+            <option value="payment-service">payment-service</option>
+            <option value="ledger-service">ledger-service</option>
+            <option value="fraud-service">fraud-service</option>
+            <option value="auth-service">auth-service</option>
+          </select>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Txn ID</th>
+                <th>Timestamp</th>
+                <th>Sender</th>
+                <th>Recipient</th>
+                <th>Amount (₹)</th>
+                <th>Service</th>
+                <th>Energy (J)</th>
+                <th>Energy (kWh)</th>
+                <th>Estimated CO₂</th>
+                <th>Audit Hash</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="carbon-ledger-body">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- VIEW: SERVICE EFFICIENCY -->
+      <section id="view-service-efficiency" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Financial Microservice Efficiency Benchmarking</h2>
+            <p class="panel-subtitle">Side-by-side comparative analysis of computational energy, carbon intensity, and latency across banking microservices.</p>
+          </div>
+          <div class="panel-actions">
+            <button class="btn-secondary-sm" onclick="fetchServiceEfficiency()">↻ Refresh Efficiency</button>
+          </div>
+        </div>
+
+        <div class="service-efficiency-grid" id="service-efficiency-cards">
+          <!-- Populated dynamically -->
+        </div>
+
+        <div class="efficiency-summary-card mt-4">
+          <h3>Computational Intensity &amp; Optimization Strategy</h3>
+          <p id="efficiency-advice-text">Analyzing computational distribution across container workloads...</p>
+        </div>
+      </section>
+
+      <!-- VIEW: SUSTAINABILITY GOALS -->
+      <section id="view-goals" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Sustainability Goals &amp; Institutional ESG Targets</h2>
+            <p class="panel-subtitle">Track regulatory compliance against RBI / Basel III sustainable banking computational carbon intensity targets.</p>
+          </div>
+          <div class="panel-actions">
+            <button class="btn-primary-action" onclick="openGoalModal()">+ Configure New Target</button>
+          </div>
+        </div>
+
+        <div class="goals-grid" id="goals-cards-container">
+          <!-- Populated dynamically -->
+        </div>
+      </section>
+
+      <!-- VIEW: BASEL RISK ALERTS -->
+      <section id="view-alerts" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Basel Risk Alert Center (Explainable Diagnostics)</h2>
+            <p class="panel-subtitle">Dynamic statistical alerts triggered when energy, latency, or carbon intensity breaches multi-window persistence ($N \ge 3$).</p>
+          </div>
+          <div class="panel-actions">
+            <button class="btn-secondary-sm" onclick="fetchAlerts()">↻ Refresh Alerts</button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Severity</th>
+                <th>Timestamp</th>
+                <th>Service</th>
+                <th>Metric Value</th>
+                <th>Dynamic Threshold</th>
+                <th>Alert Message</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="alerts-table-body">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- VIEW: RECOMMENDATIONS -->
+      <section id="view-recommendations" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Actionable Sustainability Recommendations</h2>
+            <p class="panel-subtitle">Explainable, rule-based computational optimizations for minimizing container power draw and Scope 2 operational carbon.</p>
+          </div>
+        </div>
+
+        <div class="recommendations-grid" id="recommendations-container">
+          <!-- Populated dynamically -->
+        </div>
+      </section>
+
+      <!-- VIEW: REPORTING & CSV EXPORT -->
+      <section id="view-reports" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Institutional Sustainability Reporting</h2>
+            <p class="panel-subtitle">Generate regulatory audit summaries and download cryptographically hashed carbon accounting datasets.</p>
+          </div>
+          <div class="panel-actions">
+            <a href="/sustainability/report/csv" class="btn-primary-action" download>
+              ⬇ Download Audited CSV Report
+            </a>
+          </div>
+        </div>
+
+        <div class="report-overview-grid">
+          <div class="report-kpi-tile">
+            <span class="r-label">Total Audited Transactions</span>
+            <strong class="r-val" id="rep-total-tx">1,429</strong>
+          </div>
+          <div class="report-kpi-tile">
+            <span class="r-label">Attributed Scope 2 Energy</span>
+            <strong class="r-val" id="rep-total-kwh">0.00028 kWh</strong>
+          </div>
+          <div class="report-kpi-tile">
+            <span class="r-label">Operational Footprint</span>
+            <strong class="r-val text-green" id="rep-total-co2">0.203 g CO₂</strong>
+          </div>
+          <div class="report-kpi-tile">
+            <span class="r-label">Active Carbon Factor</span>
+            <strong class="r-val" id="rep-factor">713 g/kWh (CEA India)</strong>
+          </div>
+        </div>
+
+        <div class="report-preview-box mt-4">
+          <h3>Executive Audit Summary</h3>
+          <p class="text-muted">Scope 2 Computational Emissions Accounting Statement (CEA India Baseline v20.0)</p>
+          <div class="audit-statement-body" id="audit-statement-content">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW: CARBON FACTOR REGISTRY -->
+      <section id="view-carbon-factors" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Regional Grid Carbon Factor Registry</h2>
+            <p class="panel-subtitle">Official electricity emission factors referenced from the Central Electricity Authority (CEA) of India and state regulatory commissions.</p>
+          </div>
+          <div class="panel-actions">
+            <button class="btn-primary-action" onclick="openFactorModal()">+ Add Emission Factor</button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Region</th>
+                <th>Year</th>
+                <th>Emission Factor</th>
+                <th>Unit</th>
+                <th>Official Reference Source</th>
+                <th>Effective Date</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="carbon-factors-body">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- VIEW: CONNECTED BANKING USERS -->
+      <section id="view-connected-users" class="view-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Live Connected Banking Users Telemetry</h2>
+            <p class="panel-subtitle">Real-time activity and computational carbon footprints of individual banking customers streamed live from the Bank Portal (:8001).</p>
+          </div>
+          <div class="panel-actions">
+            <button class="btn-secondary-sm" onclick="fetchConnectedUsers()">↻ Refresh Users</button>
+            <a href="http://localhost:8001" target="_blank" class="btn-primary-sm">Open Bank Portal (:8001) →</a>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Customer Name</th>
+                <th>Bank ID</th>
+                <th>Role</th>
+                <th>Transaction Count</th>
+                <th>Total Volume (₹)</th>
+                <th>Attributed Energy (J)</th>
+                <th>Attributed CO₂ (g)</th>
+                <th>Last Active</th>
+                <th>Connection Status</th>
+              </tr>
+            </thead>
+            <tbody id="connected-users-body">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- WORKLOAD MODAL -->
+  <div id="modal-workload" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Run Synthetic Workload Batch</h3>
+        <button class="modal-close" onclick="closeWorkloadModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <label>Transaction Count:</label>
+        <select id="workload-count" class="form-select">
+          <option value="10">10 Transactions (Micro test)</option>
+          <option value="100">100 Transactions (Quick test)</option>
+          <option value="500" selected>500 Transactions (Standard Repeatability Benchmark)</option>
+          <option value="1000">1,000 Transactions (High volume)</option>
+          <option value="10000">10,000 Transactions (Stress run)</option>
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary-action" onclick="closeWorkloadModal()">Cancel</button>
+        <button class="btn-primary-action" onclick="executeWorkloadFromModal()">Execute Workload</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCENARIO SWITCH MODAL -->
+  <div id="modal-scenario" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Inject Simulation Scenario</h3>
+        <button class="modal-close" onclick="closeScenarioModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Choose an operational condition or fault-injection profile:</p>
+        <div class="scenario-list">
+          <div class="scenario-option" onclick="selectAndApplyScenario('NORMAL')">
+            <strong>🟢 Normal Steady State</strong>
+            <small>Standard operations, 95% fidelity, expected baseline variance.</small>
+          </div>
+          <div class="scenario-option" onclick="selectAndApplyScenario('TRAFFIC_SPIKE')">
+            <strong>⚡ High Load Traffic Spike</strong>
+            <small>3x transaction burst. Tests workload normalization (Energy/tx remains steady).</small>
+          </div>
+          <div class="scenario-option" onclick="selectAndApplyScenario('PAYMENT_SPIKE')">
+            <strong>🔴 Payment Inefficiency Spike</strong>
+            <small>Payment CPU surge (+30% energy/tx). Triggers Basel persistent critical alert.</small>
+          </div>
+          <div class="scenario-option" onclick="selectAndApplyScenario('LEDGER_BOTTLENECK')">
+            <strong>🟡 Ledger Lock Bottleneck</strong>
+            <small>Lock contention on ledger rows causes latency surge and elevated power.</small>
+          </div>
+          <div class="scenario-option" onclick="selectAndApplyScenario('TELEMETRY_DRIFT')">
+            <strong>⚠️ Telemetry Residual Drift</strong>
+            <small>Unaccounted power causes residual to reach 8.4% (exceeding &le;6% target).</small>
+          </div>
+          <div class="scenario-option" onclick="selectAndApplyScenario('HIGH_CARBON_GRID')">
+            <strong>🏭 Coal Grid Shift (820 g/kWh)</strong>
+            <small>Grid carbon factor triples without changing energy consumption.</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPLAINABLE ALERT MODAL -->
+  <div id="modal-alert-explain" class="modal-overlay hidden">
+    <div class="modal-card modal-large">
+      <div class="modal-header">
+        <div class="modal-title-with-badge">
+          <h3>🔍 Explainable Alert Root-Cause Diagnostics</h3>
+          <span class="badge-chip critical" id="diag-level-badge">CRITICAL</span>
+        </div>
+        <button class="modal-close" onclick="closeAlertDiagnosticModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="diag-summary-box" id="diag-summary-text">
+          Status: CRITICAL. Energy/tx (0.910 J) breached critical dynamic threshold (+30.0% above baseline).
+        </div>
+        <div class="diag-grid mt-3">
+          <div class="diag-col">
+            <h4>Mathematical Threshold Formulation</h4>
+            <p>Baseline Mean ($\mu$): <strong id="diag-mu">0.700 J</strong></p>
+            <p>Baseline Std Dev ($\sigma$): <strong id="diag-sigma">0.030 J</strong></p>
+            <p>Critical Sensitivity Multiplier: <strong>3.0 &times; $\sigma$</strong></p>
+            <p>Effective Dynamic Threshold: <strong class="text-amber" id="diag-threshold">0.781 J</strong></p>
+            <p>Current Observed Energy/Tx: <strong class="text-red" id="diag-observed">0.910 J</strong></p>
+            <p>Deviation: <strong class="text-red" id="diag-deviation">+30.0%</strong></p>
+          </div>
+          <div class="diag-col">
+            <h4>Multi-Window Persistence Status</h4>
+            <p>Consecutive Breach Count: <strong id="diag-count">4 windows</strong></p>
+            <p>Configured Persistence Target: <strong id="diag-target">3 windows (45 seconds)</strong></p>
+            <p>Transient Noise Filter: <strong class="text-green">SATISFIED (Persistent Anomaly)</strong></p>
+            <p>Service Criticality: <strong class="text-red" id="diag-crit">CRITICAL (Payment Service)</strong></p>
+            <p>Bank Risk Appetite: <strong id="diag-appetite">LOW (Strict Limit)</strong></p>
+          </div>
+        </div>
+        <div class="diag-causes mt-3">
+          <h4>Probable Root-Cause Contributors</h4>
+          <ul id="diag-causes-list">
+            <li>High container CPU saturation (82%) detected in container cgroup.</li>
+            <li>Elevated request latency (145 ms) prolonging container power draw.</li>
+          </ul>
+        </div>
+        <div class="diag-remediation mt-3">
+          <h4>Recommended Remediation Protocol</h4>
+          <ul id="diag-remediation-list">
+            <li>Verify container cgroup CPU limits for payment-service.</li>
+            <li>Check for un-indexed DB queries or locking bottlenecks.</li>
+            <li>Inspect microservice trace spans in OpenTelemetry / Jaeger.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary-action" onclick="closeAlertDiagnosticModal()">Acknowledge &amp; Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1. CARBON DETAIL CALCULATION MODAL -->
+  <div id="modal-carbon-detail" class="modal-overlay hidden">
+    <div class="modal-card modal-large">
+      <div class="modal-header">
+        <h3>Audited Carbon Allocation &amp; Methodology Breakdown</h3>
+        <button class="modal-close" onclick="closeCarbonDetailModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="carbon-detail-modal-body">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary-action" onclick="closeCarbonDetailModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. GOAL CREATE / UPDATE MODAL -->
+  <div id="modal-goal-create" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Configure Sustainability Target</h3>
+        <button class="modal-close" onclick="closeGoalModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group mb-3">
+          <label>Target Title:</label>
+          <input type="text" id="goal-title-input" class="form-input" placeholder="e.g. Core Banking Carbon Intensity Cap" required />
+        </div>
+        <div class="form-group mb-3">
+          <label>Target Metric Type:</label>
+          <select id="goal-type-select" class="form-select" onchange="handleGoalTypeChange(this.value)">
+            <option value="co2_per_tx">Carbon per Transaction (gCO₂/tx)</option>
+            <option value="monthly_co2">Monthly Operational Carbon (kg CO₂)</option>
+            <option value="energy_per_tx">Workload Energy Efficiency (J/tx)</option>
+          </select>
+        </div>
+        <div class="form-group mb-3">
+          <label>Target Threshold Value:</label>
+          <input type="number" id="goal-target-val-input" class="form-input" step="0.01" value="0.20" required />
+        </div>
+        <div class="form-group mb-3">
+          <label>Measurement Unit:</label>
+          <input type="text" id="goal-unit-input" class="form-input" value="gCO2/tx" readonly />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary-action" onclick="closeGoalModal()">Cancel</button>
+        <button class="btn-primary-action" onclick="submitCreateGoal()">Save Goal Target</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. CARBON FACTOR CREATE MODAL -->
+  <div id="modal-factor-create" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Register Grid Emission Factor</h3>
+        <button class="modal-close" onclick="closeFactorModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group mb-3">
+          <label>Grid Region / Electricity Market:</label>
+          <input type="text" id="factor-region-input" class="form-input" placeholder="e.g. Northern Regional Grid (India)" required />
+        </div>
+        <div class="form-group mb-3">
+          <label>Reporting Year:</label>
+          <input type="number" id="factor-year-input" class="form-input" value="2025" min="2020" max="2030" required />
+        </div>
+        <div class="form-group mb-3">
+          <label>Emission Intensity Factor (gCO₂/kWh):</label>
+          <input type="number" id="factor-val-input" class="form-input" step="0.1" value="713.0" required />
+        </div>
+        <div class="form-group mb-3">
+          <label>Official Reference Source / Government Database:</label>
+          <input type="text" id="factor-source-input" class="form-input" placeholder="e.g. Central Electricity Authority (CEA) Baseline v21.0" required />
+        </div>
+        <div class="form-group mb-3">
+          <label><input type="checkbox" id="factor-active-checkbox" /> Set as Active Default Regional Baseline</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary-action" onclick="closeFactorModal()">Cancel</button>
+        <button class="btn-primary-action" onclick="submitCreateFactor()">Register Factor</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script src="app.js"></script>
+</body>
+</html>
